@@ -1,0 +1,20 @@
+# Virtual Environment
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Database & Telemetry logs
+*.db
+*.sqlite
+*.log
+
+# Audio files & Temporary captures
+*.wav
+*.ogg
+staff/temp_*.wav
+
+# System / OS files
+.DS_Store
+.vscode/
+.idea/

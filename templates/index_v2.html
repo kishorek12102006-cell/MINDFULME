@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindfulMe | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-800 border-b border-gray-700 px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold tracking-wider">MINDFUL<span class="text-blue-500">ME</span></h1>
+        <a href="{{ url_for('logout') }}" class="text-gray-400 hover:text-white transition">Log Out</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto p-6 mt-6">
+
+        <!-- Header & Add Button -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold">Staff Directory</h2>
+                <p class="text-gray-400 mt-1">Manage active personnel and voice profiles.</p>
+            </div>
+
+            <div class="flex gap-2">
+                <input type="text" id="newStaffName" placeholder="Enter new name..."
+                    class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500">
+                <button onclick="addStaff()"
+                    class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold transition">
+                    + Add Staff
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div id="statusMessage" class="hidden mb-6 px-4 py-3 rounded-lg font-medium text-sm"></div>
+
+        <!-- Staff Table -->
+        <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-lg">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-700 text-gray-300 text-sm uppercase tracking-wider">
+                        <th class="p-4 font-semibold">Name</th>
+                        <th class="p-4 font-semibold">Registration Date</th>
+                        <th class="p-4 font-semibold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for person in staff %}
+                    <tr class="hover:bg-gray-750 transition">
+                        <td class="p-4 font-medium">{{ person.name }}</td>
+                        <td class="p-4 text-gray-400">{{ person.registered_at.split(' ')[0] }}</td>
+                        <td class="p-4 text-right">
+                            <button class="text-red-400 hover:text-red-300 text-sm font-medium">Remove</button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="p-8 text-center text-gray-500">No staff registered yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- Add Staff API Script -->
+    <script>
+        async function addStaff() {
+            const nameInput = document.getElementById('newStaffName');
+            const name = nameInput.value.trim();
+            const statusDiv = document.getElementById('statusMessage');
+
+            if (!name) return;
+
+            try {
+                const response = await fetch('/api/add_staff', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+
+                const result = await response.json();
+
+                statusDiv.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'bg-green-500/10', 'text-green-400');
+
+                if (response.ok) {
+                    statusDiv.classList.add('bg-green-500/10', 'text-green-400');
+                    statusDiv.textContent = result.message;
+                    nameInput.value = '';
+                    setTimeout(() => window.location.reload(), 1000); // Reload to show new staff
+                } else {
+                    statusDiv.classList.add('bg-red-500/10', 'text-red-400');
+                    statusDiv.textContent = result.message;
+                }
+            } catch (error) {
+                console.error('Error adding staff:', error);
+            }
+        }
+    </script>
+</body>
+</html>
