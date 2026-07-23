@@ -14,11 +14,11 @@ import modules.db_manager as db
 sd.default.device = (0, None)
 
 # ================= CONFIGURATION =================
-BOT_TOKEN = "7910070356:AAHnNWuR9n_IKEx7W7z5uDwYloJmsJ5Sj_s"
+BOT_TOKEN = "bot token"
 
 # Verified active Telegram architecture identities
-GROUP_CHAT = "-1003471913010"  
-ADMIN_CHAT = "1777632144"
+GROUP_CHAT = ""  
+ADMIN_CHAT = ""
 
 DETECTION_ENABLED = True
 WIFI_PENDING = None
