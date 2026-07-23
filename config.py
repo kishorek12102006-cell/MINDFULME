@@ -6,8 +6,8 @@ SECRET_KEY = os.environ.get("MINDFULME_SECRET", "super-secret-dashboard-key-chan
 
 # ================= TELEGRAM SETTINGS =================
 # Replace with your actual bot token and your numeric chat ID
-BOT_TOKEN = os.environ.get("MINDFULME_BOT_TOKEN", "7910070356:AAGbYED5BiImAzCXEnT4ZKJeNCj7B1_GwHI")
-ADMIN_CHAT = "1777632144"
+BOT_TOKEN = os.environ.get("MINDFULME_BOT_TOKEN", "bot token")
+ADMIN_CHAT = "cht id"
 
 # ================= HARDWARE SETTINGS =================
 AUDIO_DEVICE_INDEX = 0  
