@@ -159,7 +159,7 @@
                     </span>
                 </div>
 
-                <!-- MODULE 2: SEN0376 ALCOHOL SENSOR DIAGNOSTIC METER -->
+                <!-- MODULE 2: SEN0376 ALCOHOL SENSOR CALIBRATOR DIAGNOSTIC METER -->
                 <div class="col-span-6 hardware-panel rounded-3xl p-6 min-h-[300px] flex flex-col justify-between">
                     <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
                     <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
@@ -173,10 +173,13 @@
                     <div class="flex flex-col items-center justify-center my-2 relative">
                         <div class="relative w-48 h-28 flex items-center justify-center">
                             <svg class="w-full h-full" viewBox="0 0 100 55">
+                                <!-- Dashed Track -->
                                 <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#262626" stroke-width="8" stroke-linecap="round" stroke-dasharray="3 3"/>
+                                <!-- Active Dynamic Gauge Path -->
                                 <path id="svg-gauge-path" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#22c55e" stroke-width="8" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="126" style="transition: stroke-dashoffset 0.5s ease-in-out, stroke 0.3s;"/>
                             </svg>
 
+                            <!-- Digital Center Output Readout -->
                             <div class="absolute bottom-1 text-center">
                                 <span id="mq-readout" class="text-3xl font-extrabold tracking-tight mono-display text-white block">0.0</span>
                                 <span class="text-[9px] font-mono text-gray-500 tracking-widest uppercase block -mt-1">PPM ALCOHOL</span>
@@ -184,6 +187,7 @@
                         </div>
                     </div>
 
+                    <!-- Sub telemetry links -->
                     <div class="grid grid-cols-3 text-center text-xs font-mono text-gray-500 border-t border-white/5 pt-3 mb-2">
                         <div><p class="text-[9px] text-gray-600">MIN_LIMIT</p><span class="text-gray-400">0.00</span></div>
                         <div><p class="text-[9px] text-gray-600">CURR_VAL</p><span id="ppm-status-text" class="text-green-400">SAFE</span></div>
@@ -191,25 +195,25 @@
                     </div>
                 </div>
 
-                <!-- MODULE 3: INITIALIZE NEW STAFF (HARDWARE MIC ENROLLMENT) -->
+                <!-- MODULE 3: INITIALIZE NEW STAFF PROTOCOL ENGINE -->
                 <div class="col-span-7 hardware-panel rounded-3xl p-6">
                     <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
                     <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
 
                     <h3 class="text-xs font-mono font-bold uppercase tracking-widest text-blue-400 mb-2 mt-2">Node Enrollment Matrix</h3>
-                    <p class="text-gray-500 text-xs mb-6 font-medium">Record voice biometric maps directly through the Raspberry Pi USB kit mic.</p>
+                    <p class="text-gray-500 text-xs mb-6 font-medium">Capture and record unique voice biometric maps directly to storage.</p>
 
                     <div class="flex gap-3 inset-display p-2 rounded-2xl border border-white/5">
-                        <input type="text" id="newStaffName" placeholder="ENTER NEW IDENTITY LABEL..."
+                        <input type="text" id="newStaffName" placeholder="ENTER NEW IDENTITY ID LABEL..."
                             class="bg-transparent px-4 py-3 text-xs text-white placeholder-gray-600 font-mono focus:outline-none w-full">
-                        <button onclick="addStaffHardware(event)"
+                        <button onclick="addStaff(event)"
                             class="bg-blue-600 border border-blue-400 text-white font-mono hover:bg-blue-700 px-6 py-3 rounded-xl font-bold transition text-xs tracking-widest shadow-lg shadow-blue-600/20 whitespace-nowrap">
                             EXECUTE_INITIALIZE
                         </button>
                     </div>
                 </div>
 
-                <!-- MODULE 4: NODE ENERGY & POWER CONTROL -->
+                <!-- MODULE 4: NODE ENERGY & POWER CONTROL MATRIX -->
                 <div class="col-span-5 hardware-panel rounded-3xl p-6 flex flex-col justify-between">
                     <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
                     <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
@@ -219,6 +223,7 @@
                         <span class="text-[9px] font-mono text-green-400">[PWR: 4.2V]</span>
                     </div>
 
+                    <!-- Battery Bars Indicator -->
                     <div class="flex items-center gap-1 bg-black/50 p-2.5 rounded-xl border border-white/5 my-2">
                         <div class="h-6 flex-1 bg-gradient-to-t from-green-600 to-green-400 rounded-sm shadow-[0_0_10px_rgba(34,197,94,0.3)]"></div>
                         <div class="h-6 flex-1 bg-gradient-to-t from-green-600 to-green-400 rounded-sm shadow-[0_0_10px_rgba(34,197,94,0.3)]"></div>
@@ -227,6 +232,7 @@
                         <div class="h-6 flex-1 bg-neutral-800 rounded-sm border border-white/5"></div>
                     </div>
 
+                    <!-- Power Action Control Button -->
                     <div class="mb-2">
                         <button onclick="shutdownNode(event)" class="w-full bg-red-950/40 border border-red-600/50 hover:bg-red-900/60 text-red-300 hover:text-white font-mono text-xs py-2.5 rounded-xl font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-red-950/50">
                             <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -260,7 +266,7 @@
                                     {% for person in staff %}
                                     <tr class="hover:bg-white/5 transition group">
                                         <td class="py-4 font-semibold text-blue-400">0x{{ person.name[:3].upper() }} // {{ person.name }}</td>
-                                        <td class="py-4 text-gray-500 text-xs">{{ person.registered_at.split(' ')[0] if person.registered_at else 'Active' }}</td>
+                                        <td class="py-4 text-gray-500 text-xs">{{ person.registered_at.split(' ')[0] if person.registered_at else 'N/A' }}</td>
                                         <td class="py-4 text-right">
                                             <button onclick="deleteStaff('{{ person.name }}')" class="text-red-900 group-hover:text-red-500 font-bold uppercase tracking-widest text-[10px] transition">
                                                 [TERMINATE]
@@ -277,7 +283,7 @@
                         </div>
                     </div>
 
-                    <!-- RECENT REALTIME TELEMETRY DIAGNOSTICS -->
+                    <!-- RECENT REALTIME DATA FEED LOGS -->
                     <div class="col-span-4 hardware-panel rounded-3xl p-6 flex flex-col justify-between">
                         <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
                         <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
@@ -287,7 +293,7 @@
                         </div>
 
                         <div id="system-logs" class="inset-display p-4 rounded-2xl flex-1 overflow-y-auto space-y-3 font-mono text-[10px] text-gray-400 border border-black min-h-[220px]">
-                            <!-- Dynamic logs -->
+                            <!-- Logs populate dynamically here -->
                         </div>
                     </div>
                 </div>
@@ -297,34 +303,40 @@
     </div>
 
     <script>
-        // --- HARDWARE MIC ENROLLMENT TRIGGER ---
-        async function addStaffHardware(event) {
+        // --- 1. STAFF ENROLLMENT LOGIC ---
+        async function addStaff(event) {
             const nameInput = document.getElementById('newStaffName');
             const name = nameInput.value.trim();
             const btn = event.currentTarget;
 
-            if (!name) return alert("Enter staff identity label");
+            if (!name) return;
 
-            btn.innerHTML = "SPEAK INTO KIT MIC...";
-            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "PROCESSING...";
+            btn.classList.add('animate-pulse', 'bg-blue-800');
 
             try {
-                const response = await fetch('/api/enroll_hardware', {
+                const response = await fetch('/api/add_staff', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: name })
                 });
 
-                const data = await response.json();
-                alert(data.message);
-                window.location.reload();
+                if (response.ok) {
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    alert("System Error: Could not initialize node.");
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('animate-pulse', 'bg-blue-800');
+                }
             } catch (error) {
-                alert('Core Link Error during enrollment.');
-                btn.innerHTML = "EXECUTE_INITIALIZE";
-                btn.disabled = false;
+                console.error('Core Link Error:', error);
+                btn.innerHTML = originalText;
+                btn.classList.remove('animate-pulse', 'bg-blue-800');
             }
         }
 
+        // --- 2. STAFF DELETION / TERMINATION ---
         async function deleteStaff(staffName) {
             if (!confirm(`Are you sure you want to terminate enrollment for ${staffName}?`)) return;
 
@@ -338,15 +350,16 @@
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert("Error removing staff record.");
+                    alert("Error removing staff member record.");
                 }
             } catch (err) {
                 console.error("Delete Error:", err);
             }
         }
 
+        // --- 3. HARDWARE SHUTDOWN CONTROL ---
         async function shutdownNode(event) {
-            if (!confirm("⚠️ WARNING: Power down MindfulMe hardware node now?")) return;
+            if (!confirm("⚠️ WARNING: Power down MindfulMe hardware node now? System will go offline.")) return;
 
             const btn = event.currentTarget;
             btn.textContent = "SHUTTING DOWN...";
@@ -361,6 +374,7 @@
             }
         }
 
+        // --- 4. MANUAL SCAN TRIGGER ---
         async function triggerManualScan() {
             const label = document.getElementById('scan-btn-label');
             if (label) label.textContent = "[RECORDING AUDIO...]";
@@ -372,27 +386,33 @@
             }, 4000);
         }
 
+        // --- 5. LIVE TELEMETRY POLLING & GAUGE ANIMATION ---
         async function fetchSystemTelemetry() {
             try {
                 const response = await fetch('/api/telemetry');
                 const data = await response.json();
 
+                // Update Numeric Readout
                 const ppmVal = parseFloat(data.ppm) || 0.0;
                 document.getElementById('mq-readout').textContent = ppmVal.toFixed(1);
 
+                // Update SVG Gauge Dash Offset (Total Path Length = 126)
                 const clampedPpm = Math.min(Math.max(ppmVal, 0), 2.0);
-                const strokeDashoffset = 126 - (126 * (clampedPpm / 2.0));
+                const progressRatio = clampedPpm / 2.0;
+                const strokeDashoffset = 126 - (126 * progressRatio);
 
                 const gaugePath = document.getElementById('svg-gauge-path');
                 if (gaugePath) {
                     gaugePath.style.strokeDashoffset = strokeDashoffset;
+                    // Change arc color if dangerous level reached
                     if (ppmVal >= 1.9) {
-                        gaugePath.setAttribute('stroke', '#ef4444');
+                        gaugePath.setAttribute('stroke', '#ef4444'); // Red
                     } else {
-                        gaugePath.setAttribute('stroke', '#22c55e');
+                        gaugePath.setAttribute('stroke', '#22c55e'); // Green
                     }
                 }
 
+                // Update Status text
                 const statusSpan = document.getElementById('ppm-status-text');
                 if (statusSpan) {
                     if (ppmVal >= 1.9) {
@@ -404,13 +424,14 @@
                     }
                 }
 
+                // Re-render Dynamic Log Stream
                 const logContainer = document.getElementById('system-logs');
                 logContainer.innerHTML = '';
 
                 data.logs.forEach(log => {
                     const p = document.createElement('p');
                     if (log.includes("Error") || log.includes("Denied") || log.includes("FAILED")) p.className = "text-red-500";
-                    else if (log.includes("SAFE") || log.includes("PASSED") || log.includes("Ready")) p.className = "text-green-500";
+                    else if (log.includes("Calibrated") || log.includes("SAFE") || log.includes("PASSED") || log.includes("Ready")) p.className = "text-green-500";
                     else p.className = "text-blue-400";
 
                     p.textContent = `> ${log}`;
@@ -424,6 +445,7 @@
             }
         }
 
+        // Poll datastream updates every 2 seconds
         setInterval(fetchSystemTelemetry, 2000);
         fetchSystemTelemetry();
     </script>

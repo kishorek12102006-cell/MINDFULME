@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINDFULME // CUSTOMER_OPERATIONS_PORTAL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #090a0f;
+            background-image:
+                radial-gradient(circle at 80% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(220, 38, 38, 0.05) 0%, transparent 40%);
+        }
+
+        .hardware-panel {
+            background: linear-gradient(145deg, rgba(20, 22, 31, 0.85) 0%, rgba(13, 15, 22, 0.95) 100%);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow:
+                inset 0 1px 2px rgba(255, 255, 255, 0.05),
+                0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .inset-display {
+            background: rgba(5, 6, 10, 0.8);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .screw-head {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #1e2230;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.8), 0 1px 0px rgba(255,255,255,0.05);
+            position: absolute;
+        }
+        .screw-tl { top: 10px; left: 10px; }
+        .screw-tr { top: 10px; right: 10px; }
+        .screw-bl { bottom: 10px; left: 10px; }
+        .screw-br { bottom: 10px; right: 10px; }
+        .screw-head::before {
+            content: ''; position: absolute; top: 3px; left: 1px; width: 6px; height: 1px; background: #3a415a; transform: rotate(45deg);
+        }
+
+        .mono-display {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Calendar Picker Styling */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-200 p-6 overflow-x-hidden">
+
+    <div class="max-w-[1600px] mx-auto grid grid-cols-12 gap-6 mt-4">
+
+        <!-- ================= SIDEBAR CONSOLE ================= -->
+        <aside class="col-span-3 hardware-panel rounded-3xl p-6 flex flex-col justify-between h-[calc(100vh-60px)] sticky top-6">
+            <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+            <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+            <div class="space-y-8">
+                <!-- Brand Title Block -->
+                <div class="border-b border-white/5 pb-4 mt-4">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-2xl font-extrabold tracking-tighter text-white">MINDFUL<span class="text-blue-500">ME</span></h1>
+                        <span class="text-[10px] mono-display bg-blue-500/10 border border-blue-500/30 text-blue-400 px-2 py-0.5 rounded">CUSTOMER</span>
+                    </div>
+                    <p class="text-[9px] mono-display text-gray-500 tracking-widest mt-1.5 uppercase">CLIENT OPERATIONS PORTAL</p>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="space-y-6">
+                    <div>
+                        <span class="text-[10px] font-bold tracking-widest text-gray-600 uppercase mono-display block mb-3">Customer Controls</span>
+                        <div class="space-y-1">
+                            <a href="/customer" class="flex items-center justify-between bg-white/5 border border-white/5 p-3 rounded-xl text-white font-semibold text-sm">
+                                <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Customer Dashboard</div>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Footer Operations -->
+            <div class="border-t border-white/5 pt-4 mb-2">
+                <a href="{{ url_for('logout') }}" class="flex items-center gap-3 text-xs font-mono text-gray-500 hover:text-red-400 transition uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Terminate Customer Session
+                </a>
+            </div>
+        </aside>
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <main class="col-span-9 space-y-6">
+
+            <!-- Top Status Ribbon -->
+            <div class="flex justify-between items-center px-4">
+                <div class="mono-display text-lg tracking-widest text-white uppercase font-bold">
+                    CUSTOMER MANAGEMENT PORTAL
+                </div>
+                <div class="flex items-center gap-4 text-xs text-gray-500 font-mono">
+                    <span>SYS_LOC // NODE_PRIME</span>
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                </div>
+            </div>
+
+            <!-- GAUGES & SUMMARY METRICS -->
+            <div class="grid grid-cols-12 gap-6">
+
+                <!-- STAFF DIRECTORY MATRIX (7 COLS) -->
+                <div class="col-span-7 hardware-panel rounded-3xl p-6">
+                    <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                    <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4 mt-2">
+                        <h2 class="text-xs font-mono font-bold text-white uppercase tracking-wider">Active Staff Directory</h2>
+                        <button onclick="triggerHardwareEnrollment()" class="bg-blue-600 border border-blue-400 text-white font-mono hover:bg-blue-700 px-3 py-1.5 rounded-xl font-bold transition text-xs tracking-wider">
+                            + ENROLL VIA KIT MIC
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs">
+                            <thead>
+                                <tr class="text-gray-600 uppercase tracking-wider text-[10px] border-b border-white/5">
+                                    <th class="pb-3">Staff Identity</th>
+                                    <th class="pb-3">Enroll Date</th>
+                                    <th class="pb-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5 text-gray-300">
+                                {% for person in staff %}
+                                <tr>
+                                    <td class="py-3 font-semibold text-blue-400">{{ person.name }}</td>
+                                    <td class="py-3 text-gray-500 text-xs">{{ person.registered_at[:10] if person.registered_at else 'Active' }}</td>
+                                    <td class="py-3 text-right">
+                                        <button onclick="removeStaff('{{ person.name }}')" class="text-red-500 hover:text-red-400 font-bold uppercase text-[10px]">
+                                            [REMOVE]
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="py-6 text-center text-gray-600 italic">No staff profiles registered.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SD STORAGE MAINTENANCE (5 COLS) -->
+                <div class="col-span-5 hardware-panel rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                    <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                    <div class="border-b border-white/5 pb-3 mt-2">
+                        <h2 class="text-xs font-mono font-bold text-white uppercase tracking-wider">SD Storage Retention Vacuum</h2>
+                    </div>
+
+                    <p class="text-xs text-gray-400 font-mono my-3">
+                        Prune historical check-in logs and execute SQLite VACUUM to reclaim block space on the SD card.
+                    </p>
+
+                    <div class="grid grid-cols-3 gap-2 font-mono text-xs my-2">
+                        <button onclick="pruneLogs(7)" class="p-2 border border-white/10 hover:border-amber-400 text-gray-300 rounded-xl transition text-center">
+                            > 7 DAYS
+                        </button>
+                        <button onclick="pruneLogs(30)" class="p-2 border border-white/10 hover:border-amber-400 text-gray-300 rounded-xl transition text-center">
+                            > 30 DAYS
+                        </button>
+                        <button onclick="pruneLogs(90)" class="p-2 border border-white/10 hover:border-amber-400 text-gray-300 rounded-xl transition text-center">
+                            > 90 DAYS
+                        </button>
+                    </div>
+
+                    <div class="inset-display p-3 rounded-xl text-center font-mono text-[10px] text-green-400">
+                        SD Health Status: Optimal (SD Safe)
+                    </div>
+                </div>
+            </div>
+
+            <!-- TELEMETRY HISTORY STREAM WITH WORKING CALENDAR -->
+            <div class="hardware-panel rounded-3xl p-6">
+                <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4 mt-2">
+                    <h2 class="text-xs font-mono font-bold text-white uppercase tracking-wider">Attendance & Telemetry History</h2>
+                    <input type="date" id="calendar-filter" onchange="fetchHistoryByDate()" class="bg-black/80 border border-white/10 text-white text-xs font-mono px-3 py-1.5 rounded-xl focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left font-mono text-xs">
+                        <thead>
+                            <tr class="text-gray-600 uppercase tracking-wider text-[10px] border-b border-white/5">
+                                <th class="pb-3">Staff Identity</th>
+                                <th class="pb-3">Match Confidence</th>
+                                <th class="pb-3">Alcohol PPM</th>
+                                <th class="pb-3">Status</th>
+                                <th class="pb-3">Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body" class="divide-y divide-white/5 text-gray-300">
+                            <tr>
+                                <td colspan="5" class="py-6 text-center text-gray-600">Select a date or wait for polling...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchHistoryByDate();
+        });
+
+        // Trigger hardware enrollment on the Pi's microphone directly
+        async function triggerHardwareEnrollment() {
+            const name = prompt("Enter staff member name for Hardware Mic Enrollment:");
+            if (!name) return;
+
+            alert("Get ready! Speak clearly 5 times into the MindfulMe USB Kit Microphone when prompted.");
+
+            try {
+                const res = await fetch('/api/enroll_hardware', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name })
+                });
+                const data = await res.json();
+                alert(data.message);
+                location.reload();
+            } catch (e) {
+                alert("Hardware enrollment failed.");
+            }
+        }
+
+        async function fetchHistoryByDate() {
+            const dateVal = document.getElementById('calendar-filter').value;
+            const url = dateVal ? `/api/history?date=${dateVal}` : '/api/history';
+            
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const tbody = document.getElementById('history-table-body');
+                tbody.innerHTML = '';
+
+                if (data.status === 'success' && data.logs.length > 0) {
+                    data.logs.forEach(row => {
+                        const isPassed = row.status === 'PASSED' || row.status === 'SAFE';
+                        const statusClass = isPassed ? 'text-green-400' : 'text-red-500';
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-white/5 transition">
+                                <td class="py-3 font-semibold text-blue-400">${row.name}</td>
+                                <td class="py-3">${((row.confidence || 0) * 100).toFixed(0)}%</td>
+                                <td class="py-3">${(row.sensor_val || 0).toFixed(2)} PPM</td>
+                                <td class="py-3 font-bold ${statusClass}">${row.status}</td>
+                                <td class="py-3 text-gray-500">${row.timestamp || 'Just now'}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-gray-600 italic">No telemetry logs found for this date.</td></tr>`;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function removeStaff(name) {
+            if (!confirm(`Remove staff record '${name}'?`)) return;
+            const res = await fetch('/api/remove_staff', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            const data = await res.json();
+            alert(data.message);
+            location.reload();
+        }
+
+        async function pruneLogs(days) {
+            if (!confirm(`Prune logs older than ${days} days to free SD space?`)) return;
+            const res = await fetch('/api/prune_logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ days })
+            });
+            const data = await res.json();
+            alert(data.message);
+            fetchHistoryByDate();
+        }
+    </script>
+</body>
+</html>

@@ -9,6 +9,10 @@ import modules.db_manager as db
 import modules.bot as bot
 from config import ADMIN_CHAT, AUDIO_DEVICE_INDEX
 
+# --- TELEMETRY EXPORTS FOR MAIN.PY WEB DASHBOARD ---
+CURRENT_MIC_PEAK = 0
+SOUND_TRIGGERED = False
+
 def get_wifi_ssid():
     """Fetches the active WiFi network name dynamically for the LCD screen."""
     try:
@@ -22,6 +26,7 @@ def wait_for_voice_trigger(threshold=4500, check_duration=0.4):
     Listens to the microphone in short bursts.
     Returns True when the peak sound wave height passes the set threshold.
     """
+    global CURRENT_MIC_PEAK, SOUND_TRIGGERED
     sample_rate = 44100
     channels = 1
 
@@ -41,10 +46,14 @@ def wait_for_voice_trigger(threshold=4500, check_duration=0.4):
             sd.wait()
 
             # Find the absolute peak amplitude within this audio window
-            peak_volume = np.max(np.abs(recording))
+            peak_volume = int(np.max(np.abs(recording)))
+
+            # Export to web app
+            CURRENT_MIC_PEAK = peak_volume
+            SOUND_TRIGGERED = bool(peak_volume > threshold)
 
             # Show real-time capture levels on terminal console
-            print(f"Room noise check -> Current Peak Volume: {peak_volume}", end='\r')
+            print(f"Room noise check -> Current Peak Volume: {peak_volume}   ", end='\r')
 
             if peak_volume > threshold:
                 print(f"\n⚡ Sound threshold passed! Volume: {peak_volume}")
@@ -90,10 +99,10 @@ def run_scanner():
             alcohol_val = hw.read_alcohol_ppm()
 
             # Calibrated safety threshold to 0.10 ppm to clear natural room noise baseline
-            is_alcohol_safe = alcohol_val < 0.10 
+            is_alcohol_safe = alcohol_val < 1.9
             alcohol_status_str = "SAFE" if is_alcohol_safe else "DANGER / ALCOHOL DETECTED"
 
-            # 3. IDENTIFICATION EVALUATION MATRIX (Professor Workflow Alignment)
+            # 3. IDENTIFICATION EVALUATION MATRIX
             if name == "Background":
                 line1 = "nosiy background"
                 line2 = ""
@@ -118,7 +127,6 @@ def run_scanner():
             print(f"👤 Classifier Result: [{line1}] [{line2}] | Alcohol: {alcohol_val} ppm")
 
             # 4. TELEGRAM ALERT DISPATCH PIPELINE
-            # Separated Voice Status and Alcohol Status for clear evaluation reporting
             current_time = time.strftime("%H:%M:%S")
             telemetry_alert_msg = (
                 f"Mindfulme Staff Check 🚨\n\n"
@@ -128,11 +136,11 @@ def run_scanner():
                 f"Status: {alcohol_status_str}\n"
                 f"Time: {current_time}"
             )
-            
-            # Fire data packet straight to your configured target group endpoint chat
+
+            # Fire data packet straight to configured target group
             bot.send_alert(bot.GROUP_CHAT, telemetry_alert_msg)
 
-            # Keep database engine updated for your dashboard metric trends
+            # Keep database engine updated for dashboard metric trends
             db.log_check_in(telegram_user_status, confidence, alcohol_val, display_log_status)
 
             # Hold screen output for 4.0 seconds so it can be verified visually

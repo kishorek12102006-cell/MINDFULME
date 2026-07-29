@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINDFULME // DIAGNOSTIC_SUITE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #090a0f;
+            background-image:
+                radial-gradient(circle at 80% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(220, 38, 38, 0.05) 0%, transparent 40%);
+        }
+
+        .hardware-panel {
+            background: linear-gradient(145deg, rgba(20, 22, 31, 0.85) 0%, rgba(13, 15, 22, 0.95) 100%);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow:
+                inset 0 1px 2px rgba(255, 255, 255, 0.05),
+                0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .inset-display {
+            background: rgba(5, 6, 10, 0.8);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.9), 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .screw-head {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #1e2230;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,0.8), 0 1px 0px rgba(255,255,255,0.05);
+            position: absolute;
+        }
+        .screw-tl { top: 10px; left: 10px; }
+        .screw-tr { top: 10px; right: 10px; }
+        .screw-bl { bottom: 10px; left: 10px; }
+        .screw-br { bottom: 10px; right: 10px; }
+        .screw-head::before {
+            content: ''; position: absolute; top: 3px; left: 1px; width: 6px; height: 1px; background: #3a415a; transform: rotate(45deg);
+        }
+
+        .mono-display {
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-gray-200 p-6 overflow-x-hidden">
+
+    <!-- Outer Structural Container -->
+    <div class="max-w-[1600px] mx-auto grid grid-cols-12 gap-6 mt-4">
+
+        <!-- ================= SIDEBAR CONSOLE ================= -->
+        <aside class="col-span-3 hardware-panel rounded-3xl p-6 flex flex-col justify-between h-[calc(100vh-60px)] sticky top-6">
+            <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+            <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+            <div class="space-y-8">
+                <!-- Brand Title Block -->
+                <div class="border-b border-white/5 pb-4 mt-4">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-2xl font-extrabold tracking-tighter text-white">MINDFUL<span class="text-blue-500">ME</span></h1>
+                        <span class="text-[10px] mono-display bg-blue-500/10 border border-blue-500/30 text-blue-400 px-2 py-0.5 rounded">NODE_v2</span>
+                    </div>
+                    <p class="text-[9px] mono-display text-gray-500 tracking-widest mt-1.5 uppercase">SYSTEM BY MED<span class="text-red-600 font-bold">X</span>AI</p>
+                </div>
+
+                <!-- Navigation Matrices -->
+                <nav class="space-y-6">
+                    <div>
+                        <span class="text-[10px] font-bold tracking-widest text-gray-600 uppercase mono-display block mb-3">General</span>
+                        <div class="space-y-1">
+                            <a href="{{ url_for('dashboard') }}" class="flex items-center gap-3 text-gray-400 hover:text-white p-3 text-sm transition">
+                                <div class="w-2 h-2 rounded-full bg-transparent"></div> System Dashboard
+                            </a>
+                            <a href="{{ url_for('diagnostics') }}" class="flex items-center justify-between bg-white/5 border border-white/5 p-3 rounded-xl text-white font-semibold text-sm">
+                                <div class="flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Diagnostic Tools</div>
+                                <span class="text-[9px] font-mono text-gray-500">⌥T</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-[10px] font-bold tracking-widest text-gray-600 uppercase mono-display block mb-3">Hardware Node Link</span>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-xs text-gray-400 px-3">
+                                <span>Core IoT Node</span>
+                                <span class="text-green-500 font-mono text-[10px] tracking-wider">[ONLINE]</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-400 px-3">
+                                <span>Telegram Core Listener</span>
+                                <span class="text-blue-400 font-mono text-[10px] tracking-wider">[ACTIVE]</span>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Panel Footer Operations -->
+            <div class="border-t border-white/5 pt-4 mb-2">
+                <a href="{{ url_for('logout') }}" class="flex items-center gap-3 text-xs font-mono text-gray-500 hover:text-red-400 transition uppercase tracking-wider">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Terminate System Session
+                </a>
+            </div>
+        </aside>
+
+        <!-- ================= MAIN DIAGNOSTICS CONSOLE ================= -->
+        <main class="col-span-9 space-y-6">
+
+            <!-- System Top Status Ribbon -->
+            <div class="flex justify-between items-center px-4">
+                <div class="mono-display text-lg tracking-widest text-white uppercase font-bold">
+                    SYSTEM DIAGNOSTICS & TELEMETRY
+                </div>
+                <div class="flex items-center gap-4 text-xs text-gray-500 font-mono">
+                    <span>SYS_LOC // NODE_PRIME</span>
+                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 1: SENSOR GRAPH & MIC DIAGNOSTIC -->
+            <div class="grid grid-cols-12 gap-6">
+
+                <!-- MODULE: REALTIME ALCOHOL SENSOR CHART -->
+                <div class="col-span-7 hardware-panel rounded-3xl p-6">
+                    <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                    <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4 mt-2">
+                        <span class="text-xs font-mono font-bold text-white uppercase tracking-wider">SEN0376 Real-time Waveform</span>
+                        <button onclick="saveSensorCatalog()" class="bg-blue-600/20 border border-blue-500/40 text-blue-400 hover:bg-blue-600 hover:text-white transition px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-wider">
+                            SAVE CATALOG PROFILE
+                        </button>
+                    </div>
+
+                    <div class="inset-display p-4 rounded-2xl h-52">
+                        <canvas id="alcoholChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- MODULE: MIC VOLUME & NOISE THRESHOLD -->
+                <div class="col-span-5 hardware-panel rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                    <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                    <div class="border-b border-white/5 pb-3 mt-2">
+                        <span class="text-xs font-mono font-bold text-white uppercase tracking-wider">Acoustic Comm Diagnostic</span>
+                    </div>
+
+                    <div class="space-y-4 my-2">
+                        <div class="inset-display p-3 rounded-xl border border-white/5 space-y-2">
+                            <div class="flex justify-between text-xs font-mono">
+                                <span class="text-gray-500">Current Peak Volume:</span>
+                                <span id="mic-vol-val" class="text-blue-400 font-bold">0</span>
+                            </div>
+                            <div class="w-full bg-neutral-800 h-2 rounded-full overflow-hidden">
+                                <div id="mic-vol-bar" class="bg-blue-500 h-full transition-all duration-150" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div id="mic-status-box" class="inset-display p-3 rounded-xl border border-white/5 text-center font-mono text-xs text-gray-400">
+                            Status: <span id="mic-status-text" class="text-green-400">Awaiting wake trigger...</span>
+                        </div>
+                    </div>
+
+                    <button onclick="testMicLoopback()" class="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-white font-mono text-xs py-2.5 rounded-xl font-bold uppercase tracking-wider transition">
+                        RUN MIC LOOPBACK CHECK
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- SECTION 2: LIVE TERMINAL STREAM & SAVED WI-FI DIRECTORY -->
+            <div class="grid grid-cols-12 gap-6">
+
+                <!-- MODULE: REALTIME SYSTEM LOG STREAM (CAT STYLE) -->
+                <div class="col-span-7 hardware-panel rounded-3xl p-6">
+                    <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                    <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4 mt-2">
+                        <h2 class="text-xs font-mono font-bold text-white uppercase tracking-wider">Live System Output Stream</h2>
+                        <span class="text-[9px] font-mono text-gray-500">[CONSOLE INTERFACE ACTIVE]</span>
+                    </div>
+
+                    <div id="live-console" class="inset-display p-4 rounded-2xl h-64 overflow-y-auto space-y-1 font-mono text-[10px] text-gray-300 border border-black">
+                        <!-- System logs stream dynamically here -->
+                    </div>
+                </div>
+
+                <!-- MODULE: SAVED NETWORK DIRECTORY -->
+                <div class="col-span-5 hardware-panel rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="screw-head screw-tl"></div><div class="screw-head screw-tr"></div>
+                    <div class="screw-head screw-bl"></div><div class="screw-head screw-br"></div>
+
+                    <div class="border-b border-white/5 pb-3 mt-2 mb-2">
+                        <h2 class="text-xs font-mono font-bold text-white uppercase tracking-wider">Saved Network Directory</h2>
+                    </div>
+
+                    <div id="network-list" class="inset-display p-3 rounded-2xl flex-1 overflow-y-auto space-y-2 font-mono text-xs max-h-40 border border-black mb-3">
+                        <!-- Networks dynamically populating -->
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex gap-2">
+                            <input type="text" id="wifi-ssid" placeholder="SSID..." class="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-gray-600 w-1/2 focus:outline-none">
+                            <input type="password" id="wifi-pass" placeholder="Password..." class="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-white placeholder-gray-600 w-1/2 focus:outline-none">
+                        </div>
+                        <button onclick="addNetwork(event)" class="w-full bg-blue-600 border border-blue-400 text-white font-mono text-xs py-2 rounded-xl font-bold uppercase tracking-wider hover:bg-blue-700 transition">
+                            ADD NETWORK PROFILE
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- 1. CHART.JS ALCOHOL SENSOR TELEMETRY GRAPH ---
+        const ctx = document.getElementById('alcoholChart').getContext('2d');
+        const alcoholChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(20).fill(''),
+                datasets: [{
+                    label: 'PPM Level',
+                    data: Array(20).fill(0.0),
+                    borderColor: '#22c55e',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: {
+                        min: 0, max: 2,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#6b7280', font: { family: 'JetBrains Mono' } }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // --- 2. REAL-TIME POLLING & CONSOLE STREAMING ---
+        async function fetchDiagnosticsData() {
+            try {
+                const res = await fetch('/api/diagnostics/stream');
+                const data = await res.json();
+
+                // Update Alcohol Line Chart
+                alcoholChart.data.datasets[0].data.shift();
+                alcoholChart.data.datasets[0].data.push(data.sensor_ppm);
+                alcoholChart.update('none');
+
+                // Update Microphone Volume Bar
+                document.getElementById('mic-vol-val').textContent = data.mic_volume;
+                const percent = Math.min((data.mic_volume / 35000) * 100, 100);
+                document.getElementById('mic-vol-bar').style.width = percent + '%';
+
+                if (data.sound_triggered) {
+                    document.getElementById('mic-status-text').className = "text-yellow-400 font-bold";
+                    document.getElementById('mic-status-text').textContent = "⚡ Sound threshold passed!";
+                } else {
+                    document.getElementById('mic-status-text').className = "text-green-400";
+                    document.getElementById('mic-status-text').textContent = "Listening...";
+                }
+
+                // Render Live System Terminal
+                const consoleDiv = document.getElementById('live-console');
+                consoleDiv.innerHTML = '';
+                data.logs.forEach(log => {
+                    const p = document.createElement('p');
+                    if (log.includes("FAILED") || log.includes("Error") || log.includes("Invalid")) p.className = "text-red-400";
+                    else if (log.includes("HTTP 200") || log.includes("passed") || log.includes("complete") || log.includes("Ready")) p.className = "text-green-400";
+                    else if (log.includes("Inbound") || log.includes("Outbound") || log.includes("Telegram") || log.includes("Network")) p.className = "text-blue-400";
+                    else p.className = "text-gray-300";
+
+                    p.textContent = log;
+                    consoleDiv.appendChild(p);
+                });
+                consoleDiv.scrollTop = consoleDiv.scrollHeight;
+
+            } catch (err) {
+                console.error("Telemetry Sync Error:", err);
+            }
+        }
+
+        // --- 3. WI-FI MANAGEMENT LOGIC ---
+        async function loadSavedNetworks() {
+            const container = document.getElementById('network-list');
+            try {
+                const res = await fetch('/api/wifi/saved');
+                const data = await res.json();
+                container.innerHTML = '';
+
+                if (data.networks && data.networks.length > 0) {
+                    data.networks.forEach(net => {
+                        const div = document.createElement('div');
+                        div.className = "flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5 text-xs font-mono";
+                        
+                        const statusColor = net.status === 'ACTIVE' ? 'text-green-400 font-bold' : 'text-gray-500';
+                        
+                        div.innerHTML = `
+                            <span class="text-blue-400 font-bold">${net.ssid}</span>
+                            <span class="text-[10px] ${statusColor}">[${net.status || 'SAVED'}]</span>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-gray-600 text-center text-xs py-2">No wireless profiles found.</p>';
+                }
+            } catch (e) {
+                container.innerHTML = '<p class="text-red-500 text-center text-xs">Error loading networks</p>';
+            }
+        }
+
+        async function addNetwork(event) {
+            const ssidInput = document.getElementById('wifi-ssid');
+            const passInput = document.getElementById('wifi-pass');
+            const ssid = ssidInput.value.trim();
+            const password = passInput.value.trim();
+
+            if (!ssid) {
+                alert("Please specify a Network SSID.");
+                return;
+            }
+
+            const btn = event.currentTarget;
+            const originalText = btn.textContent;
+            btn.textContent = "CONNECTING...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/wifi/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ssid, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert(`✅ ${data.message}`);
+                    ssidInput.value = '';
+                    passInput.value = '';
+                    loadSavedNetworks();
+                } else {
+                    alert(`❌ Connection Failed: ${data.message}`);
+                }
+            } catch (e) {
+                alert("❌ Request Failed. Check network connection.");
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function saveSensorCatalog() {
+            const res = await fetch('/api/sensor/catalog', { method: 'POST' });
+            if (res.ok) alert("Sensor baseline catalog successfully recorded!");
+        }
+
+        async function testMicLoopback() {
+            await fetch('/api/mic/test', { method: 'POST' });
+        }
+
+        // Start loops
+        setInterval(fetchDiagnosticsData, 1000);
+        loadSavedNetworks();
+    </script>
+</body>
+</html>

@@ -4,7 +4,6 @@ import sounddevice as sd
 import numpy as np
 import os
 import re
-import datetime
 import threading
 import subprocess
 from scipy.io.wavfile import write
@@ -14,26 +13,12 @@ import modules.db_manager as db
 # Force microphone default index routing
 sd.default.device = (0, None)
 
-# ================= HELPER LOGGING =================
-def log(msg):
-    """Prints timestamped logs to terminal for real-time diagnostic visibility."""
-    now = datetime.datetime.now().strftime("%H:%M:%S")
-    print(f"[{now}] {msg}", flush=True)
-
-# Safe initial logging
-log(f"Active threads running in process on module import: {threading.active_count()}")
-
 # ================= CONFIGURATION =================
-BOT_TOKEN = "bot token"
+BOT_TOKEN = "7910070356:AAHnNWuR9n_IKEx7W7z5uDwYloJmsJ5Sj_s"
 
 # Verified active Telegram architecture identities
-<<<<<<< HEAD
-GROUP_CHAT = ""  
-ADMIN_CHAT = ""
-=======
 GROUP_CHAT = "-1003471913010"
 ADMIN_CHAT = "1777632144"
->>>>>>> 3802d2a (Add customer dashboard, diagnostics templates, and update core modules)
 
 DETECTION_ENABLED = True
 WIFI_PENDING = None
@@ -44,24 +29,20 @@ HEATING = False
 # ================= TELEGRAM SEND OUTBOUND =================
 def send_alert(chat_id, message):
     """Sends clear diagnostic text sequences to the requested target chat endpoint."""
-    log(f"--> [Outbound Telegram] Sending to {chat_id}: {repr(message)}")
     try:
         url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
         r = requests.post(url, data={"chat_id": str(chat_id), "text": message}, timeout=5)
-        log(f"    [Telegram API Response] HTTP {r.status_code}")
         return r.status_code == 200
     except Exception as e:
-        log(f"❌ [Bot Error] Failed to send message: {e}")
+        print(f"[Bot Error] Failed to send message: {e}")
         return False
 
 # ================= VOICE NOTE PROCESSOR =================
 def download_and_register_voice(file_id, name):
     """Downloads voice files from Admin DM and converts them to clean 16kHz WAV."""
-    log(f"Processing voice file registration for '{name}' (File ID: {file_id})")
     try:
         file_info = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}").json()
         if "result" not in file_info:
-            log("❌ Failed to get file details from Telegram API")
             return False
 
         file_path = file_info["result"]["file_path"]
@@ -77,7 +58,7 @@ def download_and_register_voice(file_id, name):
         with open(ogg_file, "wb") as f:
             f.write(data)
 
-        log(f"Converting audio via ffmpeg: {ogg_file} -> {wav_file}")
+        # High quality transcode conversion using system audio pipelines
         result = subprocess.run(
             ['ffmpeg', '-y', '-i', ogg_file, '-ar', '16000', '-ac', '1', wav_file],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -87,88 +68,56 @@ def download_and_register_voice(file_id, name):
             os.remove(ogg_file)
 
         if result.returncode == 0:
-            log(f"✅ Voice profile successfully generated for {name}")
             db.add_staff(name)
             return True
-        log(f"❌ ffmpeg failed with code {result.returncode}")
         return False
     except Exception as e:
-        log(f"❌ Voice processor exception: {e}")
+        print(f"Voice processor exception: {e}")
         return False
 
 # ================= NETWORK PROVISIONS LAYER =================
 def get_wifi_status():
-    log("Executing system check: NetworkManager status (nmcli)...")
     try:
         active = os.popen("nmcli -t -f active,ssid,signal dev wifi | grep '^yes'").read().strip()
         if active:
             parts = active.split(':')
-            log(f"Status result: Connected to {parts[1]} ({parts[2]}%)")
             return f"📶 WiFi Status: Connected\nSSID: {parts[1]}\nSignal Strength: {parts[2]}%"
-        log("Status result: Disconnected")
         return "❌ WiFi Status: Disconnected"
     except Exception as e:
-        log(f"❌ Error getting status: {e}")
         return f"Error gathering link parameters: {e}"
 
 def get_saved_wifi():
-    log("Executing system check: Saved connections (nmcli)...")
     try:
         saved = os.popen("nmcli -t -f NAME,TYPE connection show | grep 802-11-wireless | cut -d: -f1").read().strip()
         if saved:
-            log(f"Saved networks found:\n{saved}")
             formatted_list = "\n".join([f"💾 {net}" for net in saved.split('\n')])
             return f"📋 Saved WiFi Networks:\n\n{formatted_list}"
-        log("No saved networks returned by NetworkManager.")
         return "No saved WiFi networks found. 📭"
     except Exception as e:
-        log(f"❌ Error reading saved networks: {e}")
         return f"Error reading stored data structures: {e}"
 
 def add_wifi(ssid, password):
-    log(f"Executing system command: Registering network '{ssid}' into NetworkManager...")
     try:
-        # Run nmcli directly without sudo
-        cmd = f'nmcli connection add type wifi con-name "{ssid}" ifname wlan0 ssid "{ssid}" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{password}"'
-        log(f"Running command: {cmd}")
-        
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
-        
-        if result.returncode != 0:
-            log(f"❌ nmcli error: {result.stderr.strip()}")
-            return f"Failed to save network '{ssid}' ❌\nError: {result.stderr.strip()}"
-
-        log(f"nmcli output: {result.stdout.strip()}")
-        
-        # Set autoconnect
-        subprocess.run(f'nmcli connection modify "{ssid}" connection.autoconnect yes', shell=True)
-        log(f"✅ Network '{ssid}' profile created successfully!")
+        cmd = f'sudo nmcli connection add type wifi con-name "{ssid}" ifname wlan0 ssid "{ssid}" -- wifi-sec.key-mgmt wpa-psk wifi-sec.psk "{password}"'
+        os.popen(cmd).read()
+        os.system(f'sudo nmcli connection modify "{ssid}" connection.autoconnect yes')
         return f"Network '{ssid}' saved for later fallback! 💾✅\nIt will silently auto-connect if your main WiFi drops."
-        
     except Exception as e:
-        log(f"❌ Network addition failed: {e}")
         return f"WiFi entry injection failed ❌\n{str(e)}"
 
 def delete_wifi(ssid):
-    log(f"Executing system command: Deleting connection '{ssid}'...")
     try:
-        check = subprocess.run(f'nmcli connection show "{ssid}"', shell=True, capture_output=True, text=True)
-        if check.returncode != 0:
-            log(f"Network '{ssid}' not found in nmcli records.")
+        check = os.popen(f'nmcli connection show "{ssid}" 2>/dev/null').read()
+        if not check:
             return f"Network '{ssid}' not found in saved list. ❌"
-            
-        res = subprocess.run(f'nmcli connection delete "{ssid}"', shell=True, capture_output=True, text=True)
-        if res.returncode == 0:
-            log(f"✅ Network '{ssid}' deleted successfully.")
-            return f"Network '{ssid}' removed successfully! 🗑️✅"
-        else:
-            return f"Delete failed ❌\n{res.stderr.strip()}"
+        os.system(f'sudo nmcli connection delete "{ssid}"')
+        return f"Network '{ssid}' removed successfully! 🗑️✅"
     except Exception as e:
-        log(f"❌ Delete connection failed: {e}")
         return f"Delete failed ❌\n{e}"
 
 # ================= TIMED HEATER ROUTINE =================
 def parse_duration(text_val):
+    """Parses customer text formats like '30s', '10m', '2h' into raw seconds."""
     match = re.match(r"^(\d+)([smh]?)$", text_val.lower().strip())
     if not match:
         return None
@@ -178,16 +127,16 @@ def parse_duration(text_val):
         return value * 60
     elif unit == 'h':
         return value * 3600
-    return value
+    return value  # default fallback is seconds
 
 def heat_sensor_routine(duration, caller_chat_id):
     global HEATING
     HEATING = True
-    log(f"🔥 Sensor HeatingRoutine launched for {duration} seconds...")
     send_alert(caller_chat_id, f"Heating started 🔥")
 
     remaining = duration
     while remaining > 0:
+        # Format the remaining calculation nicely onto the LCD layout screen
         if remaining >= 3600:
             time_str = f"{remaining // 3600}h {(remaining % 3600) // 60}m"
         elif remaining >= 60:
@@ -200,10 +149,10 @@ def heat_sensor_routine(duration, caller_chat_id):
         remaining -= 1
 
     hw.display_message("Sensor Ready", "")
-    log("🔥 Sensor HeatingRoutine complete.")
     send_alert(caller_chat_id, "Sensor Ready ✅")
-    time.sleep(2)
+    time.sleep(2)  # Hold status notification briefly
 
+    # Return screen immediately to the expected IDLE state
     try:
         ssid = subprocess.check_output(["iwgetid", "-r"]).decode("utf-8").strip()
         ssid = ssid if ssid else "Disconnected"
@@ -215,7 +164,6 @@ def heat_sensor_routine(duration, caller_chat_id):
 
 # ================= PHYSICAL MIC RECORDING =================
 def record_staff_voice_mic(name, caller_chat_id, duration=5):
-    log(f"🎤 Starting physical microphone recording for '{name}'...")
     try:
         fs = 48000
         os.makedirs("staff", exist_ok=True)
@@ -238,11 +186,9 @@ def record_staff_voice_mic(name, caller_chat_id, duration=5):
             os.remove(temp_filename)
 
         hw.display_message("Saved", name[:16])
-        log(f"✅ Physical microphone recording saved: {final_filename}")
         send_alert(caller_chat_id, f"{name} added via physical mic ✅")
         db.add_staff(name)
     except Exception as e:
-        log(f"❌ Mic recording failed: {e}")
         send_alert(caller_chat_id, f"Mic recording failed ❌: {e}")
 
 # ================= TELEGRAM PARSING PIPELINE =================
@@ -255,7 +201,7 @@ def process_incoming_updates():
             url += f"?offset={LAST_UPDATE_ID + 1}"
 
         data = requests.get(url, timeout=5).json()
-    except Exception:
+    except:
         return
 
     for upd in data.get("result", []):
@@ -264,10 +210,8 @@ def process_incoming_updates():
         chat_id = str(message.get("chat", {}).get("id"))
 
         if chat_id != GROUP_CHAT and chat_id != ADMIN_CHAT:
-            log(f"Ignored message from unauthorized Chat ID: {chat_id}")
             continue
 
-        # Check for Voice Profile Upload state
         if CURRENT_NAME and chat_id == ADMIN_CHAT:
             file_id = None
             if "voice" in message:
@@ -278,7 +222,6 @@ def process_incoming_updates():
                 file_id = message["document"]["file_id"]
 
             if file_id:
-                log(f"Received audio file for registration target '{CURRENT_NAME}'")
                 hw.display_message("Processing...", CURRENT_NAME[:16])
                 if download_and_register_voice(file_id, CURRENT_NAME):
                     send_alert(ADMIN_CHAT, f"{CURRENT_NAME} added successfully ✅")
@@ -293,29 +236,20 @@ def process_incoming_updates():
         if not text:
             continue
 
-        log(f"<-- [Inbound Telegram] Chat: {chat_id} | Text: {repr(text)}")
+        if WIFI_PENDING:
+            password = text.strip()
+            if len(password) < 8:
+                send_alert(chat_id, "Password must be at least 8 characters. Try again or type /cancel ❌")
+                continue
+            send_alert(chat_id, add_wifi(WIFI_PENDING, password))
+            WIFI_PENDING = None
+            continue
 
-        # Handle explicit cancellation
         if text == "/cancel":
-            log("Operation /cancel invoked.")
             CURRENT_NAME = None
             WIFI_PENDING = None
             send_alert(chat_id, "Current operation cancelled ❌")
             continue
-
-        # Handle pending Wi-Fi password capture
-        if WIFI_PENDING:
-            # Intercept commands starting with '/' so they cancel pending WiFi state rather than get consumed as password
-            if text.startswith("/"):
-                log(f"User sent command '{text}' while WIFI_PENDING was '{WIFI_PENDING}'. Clearing pending WiFi state.")
-                WIFI_PENDING = None
-            else:
-                password = text.strip()
-                log(f"Processing password capture for WiFi network '{WIFI_PENDING}'...")
-                status_msg = add_wifi(WIFI_PENDING, password)
-                send_alert(chat_id, status_msg)
-                WIFI_PENDING = None
-                continue
 
         # Command Routing Matrix
         if text.startswith("/add"):
@@ -327,7 +261,6 @@ def process_incoming_updates():
                 send_alert(ADMIN_CHAT, "Usage: /add Name")
             else:
                 CURRENT_NAME = parts[1].strip()
-                log(f"State set: Waiting for voice note for '{CURRENT_NAME}'")
                 send_alert(ADMIN_CHAT, f"Please send the voice note for {CURRENT_NAME} now. 🎤")
 
         elif text.startswith("/remove"):
@@ -339,7 +272,6 @@ def process_incoming_updates():
                 send_alert(ADMIN_CHAT, "Usage: /remove Name")
             else:
                 target_name = parts[1].strip()
-                log(f"Removing voice files matching '{target_name}'...")
                 removed_count = 0
                 if os.path.exists("staff"):
                     for filename in os.listdir("staff"):
@@ -353,10 +285,10 @@ def process_incoming_updates():
                     send_alert(ADMIN_CHAT, f"No voice profiles found for '{target_name}'. ❌")
 
         elif text == "/staff":
-            log("Querying registered staff members...")
             if not os.path.exists("staff") or not os.listdir("staff"):
                 send_alert(chat_id, "No staff members are currently registered. 📭")
             else:
+                # Clean filter: explicit inclusion check ignores local system temp capture audio waves
                 names = {re.sub(r'\d+', '', f.rsplit('.', 1)[0]).capitalize()
                          for f in os.listdir("staff")
                          if f.endswith(('.wav', '.ogg')) and "temp" not in f.lower()}
@@ -372,16 +304,13 @@ def process_incoming_updates():
                 duration_secs = parse_duration(raw_val)
                 if duration_secs is None or duration_secs <= 0:
                     raise ValueError
-                log(f"Starting heater routine thread for {duration_secs}s")
                 threading.Thread(target=heat_sensor_routine, args=(duration_secs, chat_id), daemon=True).start()
-            except Exception:
+            except:
                 send_alert(chat_id, "⚠️ Invalid format! Examples:\n/heat 45s (Seconds)\n/heat 15m (Minutes)\n/heat 2h (Hours)")
 
         elif text.startswith("/wifi"):
-            parts = text.split(" ", 2)
+            parts = text.split(" ")
             cmd = parts[1].lower() if len(parts) > 1 else ""
-            log(f"Processing /wifi command sub-type: '{cmd}'")
-            
             if cmd == "status":
                 send_alert(chat_id, get_wifi_status())
             elif cmd == "saved":
@@ -391,7 +320,6 @@ def process_incoming_updates():
                     send_alert(chat_id, "Usage: /wifi add <SSID>")
                 else:
                     WIFI_PENDING = parts[2].strip()
-                    log(f"State set: WIFI_PENDING = '{WIFI_PENDING}'")
                     send_alert(chat_id, f"Please send the password for WiFi network: '{WIFI_PENDING}' 📶")
             elif cmd == "remove":
                 if len(parts) < 3:
@@ -404,12 +332,10 @@ def process_incoming_updates():
 
         elif text == "/pause":
             DETECTION_ENABLED = False
-            log("System detection PAUSED.")
             send_alert(chat_id, "System Paused ⏸")
 
         elif text == "/resume":
             DETECTION_ENABLED = True
-            log("System detection RESUMED.")
             send_alert(chat_id, "System Resumed ▶")
 
         elif text.startswith("/mic"):
@@ -417,18 +343,15 @@ def process_incoming_updates():
             if len(parts) < 2:
                 send_alert(chat_id, "Usage: /mic Name")
             else:
-                log(f"Starting physical mic thread for '{parts[1].strip()}'")
                 threading.Thread(target=record_staff_voice_mic, args=(parts[1].strip(), chat_id), daemon=True).start()
                 send_alert(chat_id, f"Recording {parts[1].strip()} via physical mic in 3 seconds... 🎤")
 
 def bot_listener_loop():
-    log("MindfulMe Bot listener thread starting polling loop...")
     while True:
         process_incoming_updates()
         time.sleep(1)
 
 def start():
     """Launches the listener thread cleanly inside scanner.py initialization."""
-    log("Initializing MindfulMe Telegram bot background thread...")
     threading.Thread(target=bot_listener_loop, daemon=True).start()
     send_alert(GROUP_CHAT, "Mindfulme System Started Online ✅")

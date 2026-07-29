@@ -9,12 +9,10 @@ def get_db_connection():
     return conn
 
 def init_db():
-    """Builds the database tables if they do not exist."""
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Secure Admin Accounts
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS admins (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,7 +21,6 @@ def init_db():
         )
     ''')
 
-    # Registered Staff
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS staff (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +30,6 @@ def init_db():
         )
     ''')
 
-    # Scan History
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS check_ins (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,7 +44,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# --- ADMIN AUTHENTICATION ---
 def create_admin(username, password):
     try:
         conn = get_db_connection()
@@ -71,7 +66,6 @@ def verify_admin(username, password):
         return True
     return False
 
-# --- STAFF MANAGEMENT ---
 def add_staff(name, voice_path=None):
     try:
         conn = get_db_connection()
@@ -84,10 +78,6 @@ def add_staff(name, voice_path=None):
         return False
 
 def remove_staff(name):
-    """
-    Deletes a staff member from the SQLite tracking table.
-    Ensures that when bot.py deletes a voice file, the database record is cleared too!
-    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -96,7 +86,7 @@ def remove_staff(name):
         conn.close()
         return True
     except Exception as e:
-        print(f"[DB Error] Failed to delete staff profile: {e}")
+        print(f"[DB Error] Failed to delete staff: {e}")
         return False
 
 def get_all_staff():
@@ -107,7 +97,6 @@ def get_all_staff():
     conn.close()
     return [dict(row) for row in rows]
 
-# --- LOGGING & TELEMETRY ---
 def log_check_in(name, score, ppm, status):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -116,18 +105,44 @@ def log_check_in(name, score, ppm, status):
     conn.commit()
     conn.close()
 
-def get_check_ins():
-    """
-    Fetches the entire check-in history sorted by latest entry first.
-    Exposes data directly to the Flask dynamic live telemetry polling system.
-    """
+def get_check_ins(date_filter=None):
+    """Fetches check-ins using local time matching."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT staff_name AS name, confidence_score AS confidence, alcohol_ppm AS sensor_val, status FROM check_ins ORDER BY timestamp DESC')
+        if date_filter:
+            cursor.execute('''
+                SELECT staff_name AS name, confidence_score AS confidence, alcohol_ppm AS sensor_val, status, 
+                       DATETIME(timestamp, 'localtime') AS timestamp 
+                FROM check_ins 
+                WHERE DATE(timestamp, 'localtime') = DATE(?)
+                ORDER BY id DESC
+            ''', (date_filter,))
+        else:
+            cursor.execute('''
+                SELECT staff_name AS name, confidence_score AS confidence, alcohol_ppm AS sensor_val, status, 
+                       DATETIME(timestamp, 'localtime') AS timestamp 
+                FROM check_ins 
+                ORDER BY id DESC 
+                LIMIT 100
+            ''')
         rows = cursor.fetchall()
         conn.close()
         return [dict(row) for row in rows]
     except Exception as e:
-        print(f"[DB Error] Failed to fetch telemetry entries: {e}")
+        print(f"[DB Error] Failed to fetch check-ins: {e}")
         return []
+
+def prune_old_logs(days=30):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM check_ins WHERE timestamp < DATETIME('now', '-' || ? || ' days')", (days,))
+        deleted_count = cursor.rowcount
+        conn.commit()
+        cursor.execute("VACUUM;")
+        conn.close()
+        return deleted_count
+    except Exception as e:
+        print(f"[DB Error] Prune failed: {e}")
+        return 0
