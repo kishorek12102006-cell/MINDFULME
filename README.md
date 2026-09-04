@@ -74,16 +74,9 @@ Admin DM-only: `/add <name>`, `/remove <name>` (irreversible).
 
 The bot's own source isn't visible in the top-level file list — it's likely inside `modules/` or a file not yet inspected. Find and document it next.
 
-## 6. Known gaps to fix before/while handing off
 
-- No real `README.md` (this file replaces that gap for now — promote a trimmed version of it into the repo).
-- No visible `requirements.txt` / `pyproject.toml` — juniors will hit import errors on a fresh clone otherwise. Needs at minimum: `flask`, `flask_login`, `smbus` (I2C) and/or `pyserial` (UART, for `DFRobot_Alcohol.py`), plus whatever `audio.py` uses for recording/matching.
-- Hardcoded default admin credentials in `main.py`.
-- `main_legacy.py`, `scanner_v1.py`, and `modules/bot_leagcy.py` should move to an `/archive` folder or be deleted once confirmed unused, so newcomers don't get confused about which file is live. `bot_leagcy.py` should also be renamed if kept — the typo makes it look accidental rather than intentional.
-- `voice_model.pkl` vs. the centroid-based approach in `main.py` needs a one-line note on which is actually in use.
-- Confirm in `modules/hardware.py` whether the sensor is wired I2C or UART — `DFRobot_Alcohol.py` supports both, and the choice affects wiring diagrams and `Baud`/`bus`/`addr` setup for anyone replicating the hardware.
 
-## 7. Suggested first tasks for a junior
+## 6. Suggested first tasks for a junior
 
 1. Read `main.py` top to bottom, then `modules/hardware.py` and `modules/audio.py`.
 2. Run `test_sensor_dash.py` in isolation to see the alcohol sensor pipeline without the full web app.
