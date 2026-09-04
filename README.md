@@ -1,6 +1,5 @@
 # MindfulMe — Onboarding Guide for New Contributors
 
-> This document was reconstructed from the repo's file structure, `main.py`, and the project's usage guide PDF, since the repo's own README is currently empty. Treat the "Architecture" and "File Map" sections as verified; treat exact internal logic of `modules/audio.py` and `modules/hardware.py` as **inferred from how they're called** — open those two files yourself to confirm before you rely on them.
 
 ## 1. What this project is
 
